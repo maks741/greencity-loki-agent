@@ -13,7 +13,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogsSource;
-import org.greencity.constant.LokiConstants;
 import org.greencity.entity.LokiChunk;
 import org.greencity.helper.Environment;
 
@@ -25,7 +24,7 @@ public class HttpService {
 
     public void pushToLoki(LokiChunk lokiChunk) {
         try (var httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(LokiConstants.LOKI_PUSH_URL);
+            HttpPost httpPost = new HttpPost(Environment.LOKI_PUSH_URL.value());
 
             HttpEntity httpEntity = buildHttpEntity(lokiChunk);
             httpPost.setEntity(httpEntity);
@@ -34,7 +33,8 @@ public class HttpService {
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
-            if (statusCode != LokiConstants.EXPECTED_LOKI_RESPONSE_STATUS_CODE) {
+            int expectedSuccessStatusCode = Integer.parseInt(Environment.EXPECTED_LOKI_RESPONSE_STATUS_CODE.value());
+            if (statusCode != expectedSuccessStatusCode) {
                 String message = statusLine.getReasonPhrase();
                 throw new RuntimeException(
                         "Unexpected response status code from Loki: " + statusCode + "; Message: " + message
@@ -51,7 +51,7 @@ public class HttpService {
         try (var httpClient = HttpClients.createDefault()) {
             String logsUrl = logsSource.logsUrl();
             HttpGet httpGet = new HttpGet(logsUrl);
-            httpGet.setHeader(Environment.getenv("SECRET_KEY_HEADER"), Environment.getenv("SECRET_KEY"));
+            httpGet.setHeader(Environment.SECRET_KEY_HEADER.value(), Environment.SECRET_KEY.value());
 
             HttpResponse httpResponse = httpClient.execute(httpGet);
 
