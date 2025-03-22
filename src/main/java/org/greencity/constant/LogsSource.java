@@ -2,9 +2,9 @@ package org.greencity.constant;
 
 public enum LogsSource {
 
-    GREENCITY("http://localhost:8080/logs", "GreenCity"),
-    GREENCITY_UBS("http://localhost:8080/logs", "GreenCityUBS"),
-    GREENCITY_USER("http://localhost:8080/logs", "GreenCityUser");
+    GREENCITY("http://192.168.0.170:8080/logs", "GreenCity"),
+    GREENCITY_UBS("http://192.168.0.170:8080/logs", "GreenCityUBS"),
+    GREENCITY_USER("http://192.168.0.170:8080/logs", "GreenCityUser");
 
     private final String logsUrl;
     private final String jobName;
