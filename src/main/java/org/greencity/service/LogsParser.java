@@ -1,5 +1,6 @@
 package org.greencity.service;
 
+import org.greencity.constant.LogsSource;
 import org.greencity.entity.LokiPayload;
 import org.greencity.entity.LokiStream;
 import org.greencity.helper.RemoveAnsiEscapeCodesFunction;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class LogsParser {
 
-    public List<LokiPayload> parseToLokiPayloads(List<String> logLines) {
+    public List<LokiPayload> parseToLokiPayloads(LogsSource logsSource, List<String> logLines) {
         String logRegex = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
         Pattern logPattern = Pattern.compile(logRegex);
 
@@ -34,6 +35,7 @@ public class LogsParser {
                     if (log) {
                         if (!exceptionStackTraceBuilder.isEmpty()) {
                             lokiPayloads.add(buildExceptionLokiPayload(
+                                    logsSource,
                                     lokiPayloads,
                                     exceptionStackTraceBuilder
                             ));
@@ -45,6 +47,7 @@ public class LogsParser {
                         String message = logMatcher.group(3);
 
                         lokiPayloads.add(buildLokiPayload(
+                                logsSource,
                                 timestamp,
                                 level,
                                 message
@@ -58,6 +61,7 @@ public class LogsParser {
     }
 
     private LokiPayload buildExceptionLokiPayload(
+            LogsSource logsSource,
             List<LokiPayload> lokiPayloads,
             StringBuilder exceptionStackTraceBuilder
     ) {
@@ -66,6 +70,7 @@ public class LogsParser {
         String exceptionStackTrace = exceptionStackTraceBuilder.toString();
 
         return buildLokiPayload(
+                logsSource,
                 timestamp,
                 exceptionLoggingLevel,
                 exceptionStackTrace
@@ -73,6 +78,7 @@ public class LogsParser {
     }
 
     private LokiPayload buildLokiPayload(
+            LogsSource logsSource,
             String timestamp,
             String level,
             String message
@@ -82,7 +88,7 @@ public class LogsParser {
                 message
         );
 
-        LokiStream lokiStream = buildLokiStream(level);
+        LokiStream lokiStream = buildLokiStream(logsSource, level);
 
         return new LokiPayload(
                 lokiStream,
@@ -91,8 +97,8 @@ public class LogsParser {
         );
     }
 
-    private LokiStream buildLokiStream(String level) {
-        String jobName = "java-app";
+    private LokiStream buildLokiStream(LogsSource logsSource, String level) {
+        String jobName = logsSource.jobName();
         return new LokiStream(
                 jobName,
                 level

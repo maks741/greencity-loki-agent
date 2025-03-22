@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.greencity.constant.LogsSource;
 import org.greencity.constant.LokiConstants;
 import org.greencity.entity.LokiChunk;
 
@@ -43,11 +44,11 @@ public class HttpService {
         }
     }
 
-    public List<String> fetchLogLines() {
+    public List<String> fetchLogLines(LogsSource logsSource) {
         List<String> logLines;
 
         try (var httpClient = HttpClients.createDefault()) {
-            String logsUrl = "http://localhost:8080/logs";
+            String logsUrl = logsSource.logsUrl();
             HttpGet httpGet = new HttpGet(logsUrl);
 
             HttpResponse httpResponse = httpClient.execute(httpGet);
