@@ -15,6 +15,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogsSource;
 import org.greencity.constant.LokiConstants;
 import org.greencity.entity.LokiChunk;
+import org.greencity.helper.Environment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public class HttpService {
         try (var httpClient = HttpClients.createDefault()) {
             String logsUrl = logsSource.logsUrl();
             HttpGet httpGet = new HttpGet(logsUrl);
+            httpGet.setHeader(Environment.getenv("SECRET_KEY_HEADER"), Environment.getenv("SECRET_KEY"));
 
             HttpResponse httpResponse = httpClient.execute(httpGet);
 
