@@ -1,10 +1,12 @@
 package org.greencity.constant;
 
+import org.greencity.helper.Environment;
+
 public enum LogsSource {
 
-    GREENCITY("http://192.168.0.170:8080/logs", "GreenCity"),
-    GREENCITY_UBS("http://192.168.0.170:8080/logs", "GreenCityUBS"),
-    GREENCITY_USER("http://192.168.0.170:8080/logs", "GreenCityUser");
+    GREENCITY(Environment.getenv("GREENCITY_LOGS_URL"), "GreenCity"),
+    GREENCITY_UBS(Environment.getenv("GREENCITY_UBS_LOGS_URL"), "GreenCityUBS"),
+    GREENCITY_USER(Environment.getenv("GREENCITY_USER_LOGS_URL"), "GreenCityUser");
 
     private final String logsUrl;
     private final String jobName;

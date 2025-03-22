@@ -33,7 +33,7 @@ public class HttpService {
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
-            if (statusCode != LokiConstants.EXPECTED_SUCCESS_RESPONSE_STATUS_CODE) {
+            if (statusCode != LokiConstants.EXPECTED_LOKI_RESPONSE_STATUS_CODE) {
                 String message = statusLine.getReasonPhrase();
                 throw new RuntimeException(
                         "Unexpected response status code from Loki: " + statusCode + "; Message: " + message
