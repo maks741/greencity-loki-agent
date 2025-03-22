@@ -1,16 +1,14 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-COPY pom.xml pom.xml
+RUN ["git", "clone", "https://github.com/maks741/greencity-loki-agent.git", "./app"]
 
-RUN ["mvn", "dependency:go-offline"]
+WORKDIR ./app
 
-COPY src ./src
-
-RUN ["mvn", "package", "-Dmaven.test.skip=true"]
+RUN ["mvn", "clean", "install"]
 
 
 FROM eclipse-temurin:21-jre
 
-COPY --from=build ./target/greencity-loki-agent-1.0-SNAPSHOT.jar app.jar
+COPY --from=build ./app/target/greencity-loki-agent-1.0-SNAPSHOT.jar app.jar
 
 CMD ["java", "-jar", "app.jar"]
