@@ -23,8 +23,7 @@ public class HttpService {
 
     public void pushToLoki(LokiChunk lokiChunk) {
         try (var httpClient = HttpClients.createDefault()) {
-            String lokiUrl = "http://192.168.0.170:3100/loki/api/v1/push";
-            HttpPost httpPost = new HttpPost(lokiUrl);
+            HttpPost httpPost = new HttpPost(LokiConstants.LOKI_PUSH_URL);
 
             HttpEntity httpEntity = buildHttpEntity(lokiChunk);
             httpPost.setEntity(httpEntity);
