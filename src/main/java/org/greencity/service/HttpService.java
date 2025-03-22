@@ -6,11 +6,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.greencity.constant.LokiConstants;
 import org.greencity.entity.LokiChunk;
 
 import java.io.IOException;
@@ -28,7 +30,15 @@ public class HttpService {
             httpPost.setEntity(httpEntity);
 
             HttpResponse httpResponse = httpClient.execute(httpPost);
-            System.out.println("statusCode: " + httpResponse.getStatusLine().getStatusCode());
+            StatusLine statusLine = httpResponse.getStatusLine();
+            int statusCode = statusLine.getStatusCode();
+
+            if (statusCode != LokiConstants.EXPECTED_SUCCESS_RESPONSE_STATUS_CODE) {
+                String message = statusLine.getReasonPhrase();
+                throw new RuntimeException(
+                        "Unexpected response status code from Loki: " + statusCode + "; Message: " + message
+                );
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
