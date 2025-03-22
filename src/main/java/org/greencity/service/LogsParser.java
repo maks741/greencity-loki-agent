@@ -1,8 +1,8 @@
 package org.greencity.service;
 
-import com.maks.test_grafana_plugin.entity.LokiPayload;
-import com.maks.test_grafana_plugin.entity.LokiStream;
-import com.maks.test_grafana_plugin.helper.RemoveAnsiEscapeCodesFunction;
+import org.greencity.entity.LokiPayload;
+import org.greencity.entity.LokiStream;
+import org.greencity.helper.RemoveAnsiEscapeCodesFunction;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
