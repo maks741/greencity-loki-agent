@@ -6,6 +6,9 @@ import org.greencity.service.LokiService;
 public class Main {
     public static void main(String[] args) {
         LokiService lokiService = new LokiService();
-        lokiService.fetchLogsAndPushToLoki(LogsSource.GREENCITY);
+
+        for (LogsSource logsSource : LogsSource.values()) {
+            lokiService.fetchLogsAndPushToLoki(logsSource);
+        }
     }
 }
