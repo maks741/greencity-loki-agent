@@ -1,6 +1,6 @@
 package org.greencity.constant;
 
-public enum LogsSource {
+public enum LogSource {
 
     GREENCITY(EnvVar.GREENCITY_LOGS_URL.value(), "GreenCity"),
     GREENCITY_UBS(EnvVar.GREENCITY_UBS_LOGS_URL.value(), "GreenCityUBS"),
@@ -9,7 +9,7 @@ public enum LogsSource {
     private final String logsUrl;
     private final String jobName;
 
-    LogsSource(String logsUrl, String jobName) {
+    LogSource(String logsUrl, String jobName) {
         this.logsUrl = logsUrl;
         this.jobName = jobName;
     }

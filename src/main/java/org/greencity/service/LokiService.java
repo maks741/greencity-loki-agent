@@ -1,7 +1,7 @@
 package org.greencity.service;
 
 import org.greencity.constant.EnvVar;
-import org.greencity.constant.LogsSource;
+import org.greencity.constant.LogSource;
 import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
 import org.greencity.entity.LokiPayload;
@@ -12,34 +12,34 @@ import java.util.List;
 public class LokiService {
 
     public void fetchLogsAndPushToLoki() {
-        List<LogsSource> logsSources = determineLogsSources();
+        List<LogSource> logSources = determineLogsSources();
 
-        for (LogsSource logsSource : logsSources) {
-            fetchLogsAndPushToLoki(logsSource);
+        for (LogSource logSource : logSources) {
+            fetchLogsAndPushToLoki(logSource);
         }
     }
 
-    private void fetchLogsAndPushToLoki(LogsSource logsSource) {
+    private void fetchLogsAndPushToLoki(LogSource logSource) {
         HttpService httpService = new HttpService();
         LogsParser logsParser = new LogsParser();
 
-        LogsResponseDto logsResponseDto = httpService.fetchLogs(logsSource);
+        LogsResponseDto logsResponseDto = httpService.fetchLogs(logSource);
 
         if (!logsResponseDto.fetched()) {
             return;
         }
 
         List<String> logLines = logsResponseDto.logs();
-        List<LokiPayload> lokiPayloads = logsParser.parseToLokiPayloads(logsSource, logLines);
+        List<LokiPayload> lokiPayloads = logsParser.parseToLokiPayloads(logSource, logLines);
         LokiChunk lokiChunk = new LokiChunk(lokiPayloads);
 
-        httpService.pushToLoki(lokiChunk, logsSource);
+        httpService.pushToLoki(lokiChunk, logSource);
     }
 
-    private List<LogsSource> determineLogsSources() {
+    private List<LogSource> determineLogsSources() {
         return Arrays.stream(EnvVar.FETCH_LOGS_FROM.value()
                 .split(","))
-                .map(LogsSource::valueOf)
+                .map(LogSource::valueOf)
                 .toList();
     }
 

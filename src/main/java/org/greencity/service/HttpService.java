@@ -15,7 +15,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogMessage;
-import org.greencity.constant.LogsSource;
+import org.greencity.constant.LogSource;
 import org.greencity.dto.LogsRequestDto;
 import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
@@ -32,7 +32,7 @@ public class HttpService {
 
     private static final Logger log = Logger.getLogger(HttpService.class.getName());
 
-    public void pushToLoki(LokiChunk lokiChunk, LogsSource logsSource) {
+    public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
         try (var httpClient = HttpClients.createDefault()) {
             String lokiPushUrl = EnvVar.LOKI_PUSH_URL.value();
             HttpPost httpPost = new HttpPost(lokiPushUrl);
@@ -51,16 +51,16 @@ public class HttpService {
                         LogMessage.UNEXPECTED_RESPONSE_FROM_LOKI.message(statusCode, message)
                 );
             }
-            log.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logsSource.jobName(), lokiPushUrl));
+            log.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logSource.jobName(), lokiPushUrl));
         } catch (HttpHostConnectException e) {
-            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logsSource.jobName(), EnvVar.LOKI_PUSH_URL.value()));
+            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), EnvVar.LOKI_PUSH_URL.value()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public LogsResponseDto fetchLogs(LogsSource logsSource) {
-        return fetchLogs(logsSource.logsUrl(), logsSource.jobName()).map(httpResponse -> {
+    public LogsResponseDto fetchLogs(LogSource logSource) {
+        return fetchLogs(logSource.logsUrl(), logSource.jobName()).map(httpResponse -> {
             String responseBody = readBody(httpResponse);
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
@@ -70,7 +70,7 @@ public class HttpService {
                     .map(JsonElement::getAsString)
                     .toList());
 
-            log.info(LogMessage.SUCCESSFUL_LOGS_FETCH.message(logsSource.jobName(), logsSource.logsUrl()));
+            log.info(LogMessage.SUCCESSFUL_LOGS_FETCH.message(logSource.jobName(), logSource.logsUrl()));
 
             return new LogsResponseDto(
                     logLines,

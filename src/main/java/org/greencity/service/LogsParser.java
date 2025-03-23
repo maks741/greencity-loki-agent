@@ -1,6 +1,6 @@
 package org.greencity.service;
 
-import org.greencity.constant.LogsSource;
+import org.greencity.constant.LogSource;
 import org.greencity.entity.LokiPayload;
 import org.greencity.entity.LokiStream;
 import org.greencity.helper.RemoveAnsiEscapeCodesFunction;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class LogsParser {
 
-    public List<LokiPayload> parseToLokiPayloads(LogsSource logsSource, List<String> logLines) {
+    public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
         String logRegex = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
         Pattern logPattern = Pattern.compile(logRegex);
 
@@ -35,7 +35,7 @@ public class LogsParser {
                     if (log) {
                         if (!exceptionStackTraceBuilder.isEmpty()) {
                             lokiPayloads.add(buildExceptionLokiPayload(
-                                    logsSource,
+                                    logSource,
                                     lokiPayloads,
                                     exceptionStackTraceBuilder
                             ));
@@ -47,7 +47,7 @@ public class LogsParser {
                         String message = logMatcher.group(3);
 
                         lokiPayloads.add(buildLokiPayload(
-                                logsSource,
+                                logSource,
                                 timestamp,
                                 level,
                                 message
@@ -61,7 +61,7 @@ public class LogsParser {
     }
 
     private LokiPayload buildExceptionLokiPayload(
-            LogsSource logsSource,
+            LogSource logSource,
             List<LokiPayload> lokiPayloads,
             StringBuilder exceptionStackTraceBuilder
     ) {
@@ -70,7 +70,7 @@ public class LogsParser {
         String exceptionStackTrace = exceptionStackTraceBuilder.toString();
 
         return buildLokiPayload(
-                logsSource,
+                logSource,
                 timestamp,
                 exceptionLoggingLevel,
                 exceptionStackTrace
@@ -78,7 +78,7 @@ public class LogsParser {
     }
 
     private LokiPayload buildLokiPayload(
-            LogsSource logsSource,
+            LogSource logSource,
             String timestamp,
             String level,
             String message
@@ -88,7 +88,7 @@ public class LogsParser {
                 message
         );
 
-        LokiStream lokiStream = buildLokiStream(logsSource, level);
+        LokiStream lokiStream = buildLokiStream(logSource, level);
 
         return new LokiPayload(
                 lokiStream,
@@ -97,8 +97,8 @@ public class LogsParser {
         );
     }
 
-    private LokiStream buildLokiStream(LogsSource logsSource, String level) {
-        String jobName = logsSource.jobName();
+    private LokiStream buildLokiStream(LogSource logSource, String level) {
+        String jobName = logSource.jobName();
         return new LokiStream(
                 jobName,
                 level
