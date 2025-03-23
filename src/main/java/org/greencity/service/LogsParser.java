@@ -1,17 +1,20 @@
 package org.greencity.service;
 
+import org.greencity.constant.EnvVar;
 import org.greencity.constant.LogSource;
 import org.greencity.entity.LokiPayload;
 import org.greencity.entity.LokiStream;
 import org.greencity.helper.RemoveAnsiEscapeCodesFunction;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,15 +128,17 @@ public class LogsParser {
     }
 
     private String parseToUnixTime(String timestamp) {
-        SimpleDateFormat logsDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        logsDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        Date date;
-        try {
-            date = logsDateFormat.parse(timestamp);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, dateTimeFormatter);
+
+        ZoneId localZone = ZoneId.of(EnvVar.SERVER_TIME_ZONE.value());
+
+        ZonedDateTime localZonedDateTime = localDateTime.atZone(localZone);
+
+        ZonedDateTime utcZonedDateTime = localZonedDateTime.withZoneSameInstant(ZoneOffset.UTC);
+
+        Date date = Date.from(utcZonedDateTime.toInstant());
 
         return String.valueOf(date.getTime() * 1_000_000);
     }
