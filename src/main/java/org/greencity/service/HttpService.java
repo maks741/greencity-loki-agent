@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -56,6 +57,19 @@ public class HttpService {
             HttpResponse httpResponse = httpClient.execute(httpGet);
 
             HttpEntity httpEntity = httpResponse.getEntity();
+
+            StatusLine statusLine = httpResponse.getStatusLine();
+            int statusCode = statusLine.getStatusCode();
+
+            if (statusCode != HttpStatus.SC_OK) {
+                String message = statusLine.getReasonPhrase();
+                throw new RuntimeException(
+                        """
+                        Job %s can not fetch logs from  %s
+                        Response status code: %s, message: %s
+                        """.formatted(logsSource.jobName(), logsUrl, statusCode, message)
+                );
+            }
 
             String body = new String(httpEntity.getContent().readAllBytes());
             JsonArray jsonArray = JsonParser.parseString(body).getAsJsonArray();
