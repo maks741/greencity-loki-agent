@@ -1,7 +1,8 @@
 package org.greencity.constant;
 
-public enum Environment {
+public enum EnvVar {
 
+    FETCH_LOGS_FROM(System.getenv("FETCH_LOGS_FROM")),
     SECRET_KEY_HEADER(System.getenv("SECRET_KEY_HEADER")),
     SECRET_KEY(System.getenv("SECRET_KEY")),
     RESPONSE_BODY_FIELD(System.getenv("RESPONSE_BODY_FIELD")),
@@ -16,7 +17,7 @@ public enum Environment {
 
     private final String value;
 
-    Environment(String value) {
+    EnvVar(String value) {
         this.value = value;
     }
 

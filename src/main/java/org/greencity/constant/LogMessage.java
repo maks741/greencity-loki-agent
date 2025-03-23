@@ -2,6 +2,8 @@ package org.greencity.constant;
 
 public enum LogMessage {
 
+    ENV_VAR_NOT_FOUND("Environment variable not found: %s"),
+
     UNEXPECTED_RESPONSE_FROM_LOKI("Unexpected response status code from Loki: %s; Message: %s"),
     SUCCESSFUL_PUSH_TO_LOKI("Successfully pushed logs for job %s to Loki [%s]"),
     SUCCESSFUL_LOGS_FETCH("Successfully fetched logs for job %s from url: %s"),

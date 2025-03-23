@@ -2,9 +2,9 @@ package org.greencity.constant;
 
 public enum LogsSource {
 
-    GREENCITY(Environment.GREENCITY_LOGS_URL.value(), "GreenCity"),
-    GREENCITY_UBS(Environment.GREENCITY_UBS_LOGS_URL.value(), "GreenCityUBS"),
-    GREENCITY_USER(Environment.GREENCITY_USER_LOGS_URL.value(), "GreenCityUser");
+    GREENCITY(EnvVar.GREENCITY_LOGS_URL.value(), "GreenCity"),
+    GREENCITY_UBS(EnvVar.GREENCITY_UBS_LOGS_URL.value(), "GreenCityUBS"),
+    GREENCITY_USER(EnvVar.GREENCITY_USER_LOGS_URL.value(), "GreenCityUser");
 
     private final String logsUrl;
     private final String jobName;

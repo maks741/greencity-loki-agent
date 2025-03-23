@@ -19,7 +19,7 @@ import org.greencity.constant.LogsSource;
 import org.greencity.dto.LogsRequestDto;
 import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
-import org.greencity.constant.Environment;
+import org.greencity.constant.EnvVar;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +34,7 @@ public class HttpService {
 
     public void pushToLoki(LokiChunk lokiChunk, LogsSource logsSource) {
         try (var httpClient = HttpClients.createDefault()) {
-            String lokiPushUrl = Environment.LOKI_PUSH_URL.value();
+            String lokiPushUrl = EnvVar.LOKI_PUSH_URL.value();
             HttpPost httpPost = new HttpPost(lokiPushUrl);
 
             HttpEntity httpEntity = buildLokiPushRequestEntity(lokiChunk);
@@ -44,7 +44,7 @@ public class HttpService {
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
-            int expectedSuccessStatusCode = Environment.EXPECTED_LOKI_RESPONSE_STATUS_CODE.intValue();
+            int expectedSuccessStatusCode = EnvVar.EXPECTED_LOKI_RESPONSE_STATUS_CODE.intValue();
             if (statusCode != expectedSuccessStatusCode) {
                 String message = statusLine.getReasonPhrase();
                 throw new RuntimeException(
@@ -53,7 +53,7 @@ public class HttpService {
             }
             log.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logsSource.jobName(), lokiPushUrl));
         } catch (HttpHostConnectException e) {
-            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logsSource.jobName(), Environment.LOKI_PUSH_URL.value()));
+            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logsSource.jobName(), EnvVar.LOKI_PUSH_URL.value()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -64,7 +64,7 @@ public class HttpService {
             String responseBody = readBody(httpResponse);
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
-            JsonArray jsonArray = response.getAsJsonArray(Environment.RESPONSE_BODY_FIELD.value());
+            JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD.value());
 
             List<String> logLines = new ArrayList<>(jsonArray.asList().stream()
                     .map(JsonElement::getAsString)
@@ -86,7 +86,7 @@ public class HttpService {
             HttpPost httpPost = new HttpPost(logsUrl);
             HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
 
-            httpPost.setHeader(Environment.SECRET_KEY_HEADER.value(), Environment.SECRET_KEY.value());
+            httpPost.setHeader(EnvVar.SECRET_KEY_HEADER.value(), EnvVar.SECRET_KEY.value());
             httpPost.setEntity(fetchLogsRequestEntity);
 
             httpResponse = httpClient.execute(httpPost);
@@ -117,7 +117,7 @@ public class HttpService {
 
     private HttpEntity buildFetchLogsRequestEntity() {
         Gson gson = new Gson();
-        Integer logsDaysOffset = Environment.LOGS_DAYS_OFFSET.intValue();
+        Integer logsDaysOffset = EnvVar.LOGS_DAYS_OFFSET.intValue();
         LogsRequestDto logsRequestDto = new LogsRequestDto(logsDaysOffset);
 
         String logLinesRequestJson = gson.toJson(logsRequestDto);
