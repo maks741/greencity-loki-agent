@@ -28,7 +28,8 @@ public class HttpService {
 
     public void pushToLoki(LokiChunk lokiChunk, LogsSource logsSource) {
         try (var httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(Environment.LOKI_PUSH_URL.value());
+            String lokiPushUrl = Environment.LOKI_PUSH_URL.value();
+            HttpPost httpPost = new HttpPost(lokiPushUrl);
 
             HttpEntity httpEntity = buildHttpEntity(lokiChunk);
             httpPost.setEntity(httpEntity);
@@ -44,7 +45,7 @@ public class HttpService {
                         "Unexpected response status code from Loki: " + statusCode + "; Message: " + message
                 );
             }
-            log.info("Successfully pushed logs for job " + logsSource.jobName() + " to Loki");
+            log.info("Successfully pushed logs for job " + logsSource.jobName() + " to " + lokiPushUrl);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
