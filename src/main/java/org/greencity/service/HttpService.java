@@ -14,18 +14,17 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.greencity.constant.EnvVar;
 import org.greencity.constant.LogMessage;
 import org.greencity.constant.LogSource;
 import org.greencity.dto.LogsRequestDto;
 import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
-import org.greencity.constant.EnvVar;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 public class HttpService {
@@ -60,8 +59,26 @@ public class HttpService {
     }
 
     public LogsResponseDto fetchLogs(LogSource logSource) {
-        return fetchLogs(logSource.logsUrl(), logSource.jobName()).map(httpResponse -> {
-            String responseBody = readBody(httpResponse);
+        try (var httpClient = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost(logSource.logsUrl());
+            HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
+
+            httpPost.setHeader(EnvVar.SECRET_KEY_HEADER.value(), EnvVar.SECRET_KEY.value());
+            httpPost.setEntity(fetchLogsRequestEntity);
+
+            HttpResponse httpResponse = httpClient.execute(httpPost);
+
+            HttpEntity httpEntity = httpResponse.getEntity();
+
+            String responseBody = readBody(httpEntity);
+            StatusLine statusLine = httpResponse.getStatusLine();
+
+            int statusCode = statusLine.getStatusCode();
+
+            if (statusCode != HttpStatus.SC_OK) {
+                log.warning(LogMessage.FAILED_LOGS_FETCH.message(logSource.jobName(), logSource.logsUrl(), responseBody));
+                return LogsResponseDto.unfetched();
+            }
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
             JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD.value());
@@ -76,37 +93,12 @@ public class HttpService {
                     logLines,
                     true
             );
-        }).orElse(LogsResponseDto.unfetched());
-    }
-
-    private Optional<HttpResponse> fetchLogs(String logsUrl, String jobName) {
-        HttpResponse httpResponse = null;
-
-        try (var httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(logsUrl);
-            HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
-
-            httpPost.setHeader(EnvVar.SECRET_KEY_HEADER.value(), EnvVar.SECRET_KEY.value());
-            httpPost.setEntity(fetchLogsRequestEntity);
-
-            httpResponse = httpClient.execute(httpPost);
-
-            StatusLine statusLine = httpResponse.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
-
-            String responseBody = readBody(httpResponse);
-
-            if (statusCode != HttpStatus.SC_OK) {
-                log.warning(LogMessage.FAILED_LOGS_FETCH.message(jobName, logsUrl, responseBody));
-                return Optional.empty();
-            }
         } catch (HttpHostConnectException e) {
-            log.warning(LogMessage.UNABLE_TO_CONNECT.message(jobName, logsUrl));
+            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), logSource.logsUrl()));
+            return LogsResponseDto.unfetched();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return Optional.ofNullable(httpResponse);
     }
 
     private HttpEntity buildLokiPushRequestEntity(LokiChunk lokiChunk) {
@@ -124,15 +116,11 @@ public class HttpService {
         return new StringEntity(logLinesRequestJson, ContentType.APPLICATION_JSON);
     }
 
-    private String readBody(HttpResponse httpResponse) {
-        HttpEntity httpEntity = httpResponse.getEntity();
-
-        String responseBody;
-        try (InputStream content = httpEntity.getContent()) {
-            responseBody = new String(content.readAllBytes());
+    private String readBody(HttpEntity httpEntity) {
+        try {
+            return EntityUtils.toString(httpEntity, "UTF-8");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return responseBody;
     }
 }
