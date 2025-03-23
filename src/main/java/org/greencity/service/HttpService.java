@@ -10,6 +10,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -21,6 +22,7 @@ import org.greencity.constant.Environment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -48,13 +50,15 @@ public class HttpService {
                 );
             }
             log.info("Successfully pushed logs for job " + logsSource.jobName() + " to " + lokiPushUrl);
+        }  catch (HttpHostConnectException e) {
+            log.warning("Job %s can not connect to %s".formatted(logsSource.jobName(), Environment.LOKI_PUSH_URL.value()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public List<String> fetchLogLines(LogsSource logsSource) {
-        List<String> logLines;
+        List<String> logLines = Collections.emptyList();
 
         try (var httpClient = HttpClients.createDefault()) {
             String logsUrl = logsSource.logsUrl();
@@ -88,6 +92,8 @@ public class HttpService {
                     .toList());
 
             log.info("Successfully fetched logs for job " + logsSource.jobName() + " from url: " + logsSource.logsUrl());
+        } catch (HttpHostConnectException e) {
+            log.warning("Job %s can not connect to %s".formatted(logsSource.jobName(), logsSource.logsUrl()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
