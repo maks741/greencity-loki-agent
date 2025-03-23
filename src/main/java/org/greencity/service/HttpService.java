@@ -14,6 +14,7 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.greencity.constant.LogMessage;
 import org.greencity.constant.LogsSource;
 import org.greencity.dto.LogsRequestDto;
 import org.greencity.dto.LogsResponseDto;
@@ -47,12 +48,12 @@ public class HttpService {
             if (statusCode != expectedSuccessStatusCode) {
                 String message = statusLine.getReasonPhrase();
                 throw new RuntimeException(
-                        "Unexpected response status code from Loki: " + statusCode + "; Message: " + message
+                        LogMessage.UNEXPECTED_RESPONSE_FROM_LOKI.message(statusCode, message)
                 );
             }
-            log.info("Successfully pushed logs for job " + logsSource.jobName() + " to " + lokiPushUrl);
+            log.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logsSource.jobName(), lokiPushUrl));
         } catch (HttpHostConnectException e) {
-            log.warning("Job %s can not connect to %s".formatted(logsSource.jobName(), Environment.LOKI_PUSH_URL.value()));
+            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logsSource.jobName(), Environment.LOKI_PUSH_URL.value()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +70,7 @@ public class HttpService {
                     .map(JsonElement::getAsString)
                     .toList());
 
-            log.info("Successfully fetched logs for job " + logsSource.jobName() + " from url: " + logsSource.logsUrl());
+            log.info(LogMessage.SUCCESSFUL_LOGS_FETCH.message(logsSource.jobName(), logsSource.logsUrl()));
 
             return new LogsResponseDto(
                     logLines,
@@ -96,16 +97,11 @@ public class HttpService {
             String responseBody = readBody(httpResponse);
 
             if (statusCode != HttpStatus.SC_OK) {
-                log.warning(
-                        """
-                                Job %s can not fetch logs from  %s
-                                Response: %s
-                                """.formatted(jobName, logsUrl, responseBody)
-                );
+                log.warning(LogMessage.FAILED_LOGS_FETCH.message(jobName, logsUrl, responseBody));
                 return Optional.empty();
             }
         } catch (HttpHostConnectException e) {
-            log.warning("Job %s can not connect to %s".formatted(jobName, logsUrl));
+            log.warning(LogMessage.UNABLE_TO_CONNECT.message(jobName, logsUrl));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
