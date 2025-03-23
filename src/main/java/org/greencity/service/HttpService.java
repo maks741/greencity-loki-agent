@@ -20,16 +20,11 @@ import org.greencity.helper.Environment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
 public class HttpService {
 
     private static final Logger log = Logger.getLogger(HttpService.class.getName());
-
-    public HttpService() {
-        initLogger();
-    }
 
     public void pushToLoki(LokiChunk lokiChunk, LogsSource logsSource) {
         try (var httpClient = HttpClients.createDefault()) {
@@ -98,14 +93,5 @@ public class HttpService {
         Gson gson = new Gson();
         String lokiChunkJson = gson.toJson(lokiChunk);
         return new StringEntity(lokiChunkJson, ContentType.APPLICATION_JSON);
-    }
-
-    private void initLogger() {
-        log.setUseParentHandlers(false);
-        log.addHandler(new ConsoleHandler() {
-            {
-                setOutputStream(System.out);
-            }
-        });
     }
 }
