@@ -3,6 +3,7 @@ package org.greencity.service;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,6 +19,7 @@ import org.greencity.entity.LokiChunk;
 import org.greencity.helper.Environment;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -76,8 +78,13 @@ public class HttpService {
                 );
             }
 
-            String body = new String(httpEntity.getContent().readAllBytes());
-            JsonArray jsonArray = JsonParser.parseString(body).getAsJsonArray();
+            String responseBody;
+            try (InputStream content = httpEntity.getContent()) {
+                responseBody = new String(content.readAllBytes());
+            }
+            JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
+            JsonArray jsonArray = response.getAsJsonArray(Environment.RESPONSE_BODY_FIELD.value());
+
             logLines = new ArrayList<>(jsonArray.asList().stream()
                     .map(JsonElement::getAsString)
                     .toList());

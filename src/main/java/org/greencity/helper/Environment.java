@@ -4,6 +4,7 @@ public enum Environment {
 
     SECRET_KEY_HEADER(System.getenv("SECRET_KEY_HEADER")),
     SECRET_KEY(System.getenv("SECRET_KEY")),
+    RESPONSE_BODY_FIELD(System.getenv("RESPONSE_BODY_FIELD")),
 
     EXPECTED_LOKI_RESPONSE_STATUS_CODE(System.getenv("EXPECTED_LOKI_RESPONSE_STATUS_CODE")),
     LOKI_PUSH_URL(System.getenv("LOKI_PUSH_URL")),
