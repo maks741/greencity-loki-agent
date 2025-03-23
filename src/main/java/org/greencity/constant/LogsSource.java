@@ -1,7 +1,5 @@
 package org.greencity.constant;
 
-import org.greencity.helper.Environment;
-
 public enum LogsSource {
 
     GREENCITY(Environment.GREENCITY_LOGS_URL.value(), "GreenCity"),

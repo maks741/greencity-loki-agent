@@ -16,7 +16,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogsSource;
 import org.greencity.entity.LokiChunk;
-import org.greencity.helper.Environment;
+import org.greencity.constant.Environment;
 
 import java.io.IOException;
 import java.io.InputStream;
