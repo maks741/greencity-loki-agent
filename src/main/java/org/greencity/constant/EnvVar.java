@@ -21,6 +21,16 @@ public enum EnvVar {
         this.value = value;
     }
 
+    public static void verifyEnvironmentVariables() {
+        for (EnvVar envVar : values()) {
+            if (envVar.value() == null) {
+                throw new RuntimeException(
+                        LogMessage.ENV_VAR_NOT_FOUND.message(envVar.name())
+                );
+            }
+        }
+    }
+
     public String value() {
         return value;
     }

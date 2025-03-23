@@ -1,11 +1,11 @@
 package org.greencity;
 
-import org.greencity.helper.Dotenv;
+import org.greencity.constant.EnvVar;
 import org.greencity.service.LokiService;
 
 public class Main {
     public static void main(String[] args) {
-        Dotenv.verifyEnvironmentVariables();
+        EnvVar.verifyEnvironmentVariables();
 
         LokiService lokiService = new LokiService();
         lokiService.fetchLogsAndPushToLoki();
