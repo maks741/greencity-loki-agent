@@ -16,7 +16,7 @@ public class LokiService {
         List<LokiPayload> lokiPayloads = logsParser.parseToLokiPayloads(logsSource, logLines);
         LokiChunk lokiChunk = new LokiChunk(lokiPayloads);
 
-        httpService.pushToLoki(lokiChunk);
+        httpService.pushToLoki(lokiChunk, logsSource);
     }
 
 }
