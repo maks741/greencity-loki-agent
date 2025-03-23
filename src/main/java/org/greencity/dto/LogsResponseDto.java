@@ -3,13 +3,13 @@ package org.greencity.dto;
 import java.util.Collections;
 import java.util.List;
 
-public record LogsFetchResponseDto(
+public record LogsResponseDto(
         List<String> logs,
         boolean fetched
 ) {
 
-    public static LogsFetchResponseDto unfetched() {
-        return new LogsFetchResponseDto(
+    public static LogsResponseDto unfetched() {
+        return new LogsResponseDto(
                 Collections.emptyList(),
                 false
         );

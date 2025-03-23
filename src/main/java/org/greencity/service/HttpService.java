@@ -15,8 +15,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogsSource;
-import org.greencity.dto.LogLinesRequestDto;
-import org.greencity.dto.LogsFetchResponseDto;
+import org.greencity.dto.LogsRequestDto;
+import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
 import org.greencity.constant.Environment;
 
@@ -58,8 +58,8 @@ public class HttpService {
         }
     }
 
-    public LogsFetchResponseDto fetchLogLines(LogsSource logsSource) {
-        return fetchLogs(logsSource).map(httpResponse -> {
+    public LogsResponseDto fetchLogs(LogsSource logsSource) {
+        return fetchLogs(logsSource.logsUrl(), logsSource.jobName()).map(httpResponse -> {
             String responseBody = readBody(httpResponse);
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
@@ -71,18 +71,17 @@ public class HttpService {
 
             log.info("Successfully fetched logs for job " + logsSource.jobName() + " from url: " + logsSource.logsUrl());
 
-            return new LogsFetchResponseDto(
+            return new LogsResponseDto(
                     logLines,
                     true
             );
-        }).orElse(LogsFetchResponseDto.unfetched());
+        }).orElse(LogsResponseDto.unfetched());
     }
 
-    private Optional<HttpResponse> fetchLogs(LogsSource logsSource) {
+    private Optional<HttpResponse> fetchLogs(String logsUrl, String jobName) {
         HttpResponse httpResponse = null;
 
         try (var httpClient = HttpClients.createDefault()) {
-            String logsUrl = logsSource.logsUrl();
             HttpPost httpPost = new HttpPost(logsUrl);
             HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
 
@@ -101,12 +100,12 @@ public class HttpService {
                         """
                                 Job %s can not fetch logs from  %s
                                 Response: %s
-                                """.formatted(logsSource.jobName(), logsSource.logsUrl(), responseBody)
+                                """.formatted(jobName, logsUrl, responseBody)
                 );
                 return Optional.empty();
             }
         } catch (HttpHostConnectException e) {
-            log.warning("Job %s can not connect to %s".formatted(logsSource.jobName(), logsSource.logsUrl()));
+            log.warning("Job %s can not connect to %s".formatted(jobName, logsUrl));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -123,9 +122,9 @@ public class HttpService {
     private HttpEntity buildFetchLogsRequestEntity() {
         Gson gson = new Gson();
         Integer logsDaysOffset = Environment.LOGS_DAYS_OFFSET.intValue();
-        LogLinesRequestDto logLinesRequestDto = new LogLinesRequestDto(logsDaysOffset);
+        LogsRequestDto logsRequestDto = new LogsRequestDto(logsDaysOffset);
 
-        String logLinesRequestJson = gson.toJson(logLinesRequestDto);
+        String logLinesRequestJson = gson.toJson(logsRequestDto);
         return new StringEntity(logLinesRequestJson, ContentType.APPLICATION_JSON);
     }
 

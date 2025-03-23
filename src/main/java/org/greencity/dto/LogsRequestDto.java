@@ -1,6 +1,6 @@
 package org.greencity.dto;
 
-public record LogLinesRequestDto(
+public record LogsRequestDto(
         Integer daysOffset
 ) {
 }
