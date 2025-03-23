@@ -5,6 +5,7 @@ public enum Environment {
     SECRET_KEY_HEADER(System.getenv("SECRET_KEY_HEADER")),
     SECRET_KEY(System.getenv("SECRET_KEY")),
     RESPONSE_BODY_FIELD(System.getenv("RESPONSE_BODY_FIELD")),
+    LOGS_DAYS_OFFSET(System.getenv("LOGS_DAYS_OFFSET")),
 
     EXPECTED_LOKI_RESPONSE_STATUS_CODE(System.getenv("EXPECTED_LOKI_RESPONSE_STATUS_CODE")),
     LOKI_PUSH_URL(System.getenv("LOKI_PUSH_URL")),
@@ -21,5 +22,9 @@ public enum Environment {
 
     public String value() {
         return value;
+    }
+
+    public Integer intValue() {
+        return Integer.parseInt(value);
     }
 }

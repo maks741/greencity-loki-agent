@@ -9,12 +9,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogsSource;
+import org.greencity.dto.LogLinesRequestDto;
 import org.greencity.entity.LokiChunk;
 import org.greencity.constant.Environment;
 
@@ -33,14 +33,14 @@ public class HttpService {
             String lokiPushUrl = Environment.LOKI_PUSH_URL.value();
             HttpPost httpPost = new HttpPost(lokiPushUrl);
 
-            HttpEntity httpEntity = buildHttpEntity(lokiChunk);
+            HttpEntity httpEntity = buildLokiPushRequestEntity(lokiChunk);
             httpPost.setEntity(httpEntity);
 
             HttpResponse httpResponse = httpClient.execute(httpPost);
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
-            int expectedSuccessStatusCode = Integer.parseInt(Environment.EXPECTED_LOKI_RESPONSE_STATUS_CODE.value());
+            int expectedSuccessStatusCode = Environment.EXPECTED_LOKI_RESPONSE_STATUS_CODE.intValue();
             if (statusCode != expectedSuccessStatusCode) {
                 String message = statusLine.getReasonPhrase();
                 throw new RuntimeException(
@@ -58,30 +58,28 @@ public class HttpService {
 
         try (var httpClient = HttpClients.createDefault()) {
             String logsUrl = logsSource.logsUrl();
-            HttpGet httpGet = new HttpGet(logsUrl);
-            httpGet.setHeader(Environment.SECRET_KEY_HEADER.value(), Environment.SECRET_KEY.value());
+            HttpPost httpPost = new HttpPost(logsUrl);
+            HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
 
-            HttpResponse httpResponse = httpClient.execute(httpGet);
+            httpPost.setHeader(Environment.SECRET_KEY_HEADER.value(), Environment.SECRET_KEY.value());
+            httpPost.setEntity(fetchLogsRequestEntity);
 
-            HttpEntity httpEntity = httpResponse.getEntity();
+            HttpResponse httpResponse = httpClient.execute(httpPost);
 
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
+            String responseBody = body(httpResponse);
+
             if (statusCode != HttpStatus.SC_OK) {
-                String message = statusLine.getReasonPhrase();
                 throw new RuntimeException(
                         """
                         Job %s can not fetch logs from  %s
-                        Response status code: %s, message: %s
-                        """.formatted(logsSource.jobName(), logsUrl, statusCode, message)
+                        Response: %s
+                        """.formatted(logsSource.jobName(), logsUrl, responseBody)
                 );
             }
 
-            String responseBody;
-            try (InputStream content = httpEntity.getContent()) {
-                responseBody = new String(content.readAllBytes());
-            }
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
             JsonArray jsonArray = response.getAsJsonArray(Environment.RESPONSE_BODY_FIELD.value());
 
@@ -97,9 +95,30 @@ public class HttpService {
         return logLines;
     }
 
-    private HttpEntity buildHttpEntity(LokiChunk lokiChunk) {
+    private HttpEntity buildLokiPushRequestEntity(LokiChunk lokiChunk) {
         Gson gson = new Gson();
         String lokiChunkJson = gson.toJson(lokiChunk);
         return new StringEntity(lokiChunkJson, ContentType.APPLICATION_JSON);
+    }
+
+    private HttpEntity buildFetchLogsRequestEntity() {
+        Gson gson = new Gson();
+        Integer logsDaysOffset = Environment.LOGS_DAYS_OFFSET.intValue();
+        LogLinesRequestDto logLinesRequestDto = new LogLinesRequestDto(logsDaysOffset);
+
+        String logLinesRequestJson = gson.toJson(logLinesRequestDto);
+        return new StringEntity(logLinesRequestJson, ContentType.APPLICATION_JSON);
+    }
+
+    private String body(HttpResponse httpResponse) {
+        HttpEntity httpEntity = httpResponse.getEntity();
+
+        String responseBody;
+        try (InputStream content = httpEntity.getContent()) {
+            responseBody = new String(content.readAllBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return responseBody;
     }
 }
