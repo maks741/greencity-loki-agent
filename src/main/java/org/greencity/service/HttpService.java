@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -64,6 +65,7 @@ public class HttpService {
             HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
 
             httpPost.setHeader(EnvVar.SECRET_KEY_HEADER.value(), EnvVar.SECRET_KEY.value());
+            httpPost.setHeader(HttpHeaders.AUTHORIZATION, EnvVar.AUTH_TOKEN.value());
             httpPost.setEntity(fetchLogsRequestEntity);
 
             HttpResponse httpResponse = httpClient.execute(httpPost);

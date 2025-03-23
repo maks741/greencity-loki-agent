@@ -7,6 +7,7 @@ public enum EnvVar {
     SECRET_KEY(System.getenv("SECRET_KEY")),
     RESPONSE_BODY_FIELD(System.getenv("RESPONSE_BODY_FIELD")),
     LOGS_DAYS_OFFSET(System.getenv("LOGS_DAYS_OFFSET")),
+    AUTH_TOKEN("Bearer " + System.getenv("AUTH_TOKEN")),
 
     EXPECTED_LOKI_RESPONSE_STATUS_CODE(System.getenv("EXPECTED_LOKI_RESPONSE_STATUS_CODE")),
     LOKI_PUSH_URL(System.getenv("LOKI_PUSH_URL")),
