@@ -16,14 +16,15 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.LogsSource;
 import org.greencity.dto.LogLinesRequestDto;
+import org.greencity.dto.LogsFetchResponseDto;
 import org.greencity.entity.LokiChunk;
 import org.greencity.constant.Environment;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class HttpService {
@@ -50,15 +51,35 @@ public class HttpService {
                 );
             }
             log.info("Successfully pushed logs for job " + logsSource.jobName() + " to " + lokiPushUrl);
-        }  catch (HttpHostConnectException e) {
+        } catch (HttpHostConnectException e) {
             log.warning("Job %s can not connect to %s".formatted(logsSource.jobName(), Environment.LOKI_PUSH_URL.value()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public List<String> fetchLogLines(LogsSource logsSource) {
-        List<String> logLines = Collections.emptyList();
+    public LogsFetchResponseDto fetchLogLines(LogsSource logsSource) {
+        return fetchLogs(logsSource).map(httpResponse -> {
+            String responseBody = readBody(httpResponse);
+
+            JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
+            JsonArray jsonArray = response.getAsJsonArray(Environment.RESPONSE_BODY_FIELD.value());
+
+            List<String> logLines = new ArrayList<>(jsonArray.asList().stream()
+                    .map(JsonElement::getAsString)
+                    .toList());
+
+            log.info("Successfully fetched logs for job " + logsSource.jobName() + " from url: " + logsSource.logsUrl());
+
+            return new LogsFetchResponseDto(
+                    logLines,
+                    true
+            );
+        }).orElse(LogsFetchResponseDto.unfetched());
+    }
+
+    private Optional<HttpResponse> fetchLogs(LogsSource logsSource) {
+        HttpResponse httpResponse = null;
 
         try (var httpClient = HttpClients.createDefault()) {
             String logsUrl = logsSource.logsUrl();
@@ -68,37 +89,29 @@ public class HttpService {
             httpPost.setHeader(Environment.SECRET_KEY_HEADER.value(), Environment.SECRET_KEY.value());
             httpPost.setEntity(fetchLogsRequestEntity);
 
-            HttpResponse httpResponse = httpClient.execute(httpPost);
+            httpResponse = httpClient.execute(httpPost);
 
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
-            String responseBody = body(httpResponse);
+            String responseBody = readBody(httpResponse);
 
             if (statusCode != HttpStatus.SC_OK) {
-                throw new RuntimeException(
+                log.warning(
                         """
-                        Job %s can not fetch logs from  %s
-                        Response: %s
-                        """.formatted(logsSource.jobName(), logsUrl, responseBody)
+                                Job %s can not fetch logs from  %s
+                                Response: %s
+                                """.formatted(logsSource.jobName(), logsSource.logsUrl(), responseBody)
                 );
+                return Optional.empty();
             }
-
-            JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
-            JsonArray jsonArray = response.getAsJsonArray(Environment.RESPONSE_BODY_FIELD.value());
-
-            logLines = new ArrayList<>(jsonArray.asList().stream()
-                    .map(JsonElement::getAsString)
-                    .toList());
-
-            log.info("Successfully fetched logs for job " + logsSource.jobName() + " from url: " + logsSource.logsUrl());
         } catch (HttpHostConnectException e) {
             log.warning("Job %s can not connect to %s".formatted(logsSource.jobName(), logsSource.logsUrl()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return logLines;
+        return Optional.ofNullable(httpResponse);
     }
 
     private HttpEntity buildLokiPushRequestEntity(LokiChunk lokiChunk) {
@@ -116,7 +129,7 @@ public class HttpService {
         return new StringEntity(logLinesRequestJson, ContentType.APPLICATION_JSON);
     }
 
-    private String body(HttpResponse httpResponse) {
+    private String readBody(HttpResponse httpResponse) {
         HttpEntity httpEntity = httpResponse.getEntity();
 
         String responseBody;

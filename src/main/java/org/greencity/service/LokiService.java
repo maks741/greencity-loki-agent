@@ -1,6 +1,7 @@
 package org.greencity.service;
 
 import org.greencity.constant.LogsSource;
+import org.greencity.dto.LogsFetchResponseDto;
 import org.greencity.entity.LokiChunk;
 import org.greencity.entity.LokiPayload;
 
@@ -12,7 +13,13 @@ public class LokiService {
         HttpService httpService = new HttpService();
         LogsParser logsParser = new LogsParser();
 
-        List<String> logLines = httpService.fetchLogLines(logsSource);
+        LogsFetchResponseDto logsFetchResponseDto = httpService.fetchLogLines(logsSource);
+
+        if (!logsFetchResponseDto.fetched()) {
+            return;
+        }
+
+        List<String> logLines = logsFetchResponseDto.logs();
         List<LokiPayload> lokiPayloads = logsParser.parseToLokiPayloads(logsSource, logLines);
         LokiChunk lokiChunk = new LokiChunk(lokiPayloads);
 
