@@ -24,12 +24,8 @@ public class LokiService {
         LogsParser logsParser = new LogsParser();
 
         LogsResponseDto logsResponseDto = httpService.fetchLogs(logSource);
-
-        if (!logsResponseDto.fetched()) {
-            return;
-        }
-
         List<String> logLines = logsResponseDto.logs();
+
         List<LokiPayload> lokiPayloads = logsParser.parseToLokiPayloads(logSource, logLines);
         LokiChunk lokiChunk = new LokiChunk(lokiPayloads);
 

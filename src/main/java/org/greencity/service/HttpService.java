@@ -26,40 +26,58 @@ import org.greencity.entity.LokiChunk;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HttpService {
 
     private static final Logger log = Logger.getLogger(HttpService.class.getName());
 
+    static {
+        initLogger();
+    }
+
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
+        String lokiPushUrl = EnvVar.LOKI_PUSH_URL.value();
+
+        log.fine(LogMessage.STARTING_TO_PUSH_LOGS.message(logSource.jobName(), lokiPushUrl));
+
         try (var httpClient = HttpClients.createDefault()) {
-            String lokiPushUrl = EnvVar.LOKI_PUSH_URL.value();
             HttpPost httpPost = new HttpPost(lokiPushUrl);
 
             HttpEntity httpEntity = buildLokiPushRequestEntity(lokiChunk);
             httpPost.setEntity(httpEntity);
 
+            log.finer(LogMessage.SUCCESSFULLY_PREPARED_PUSH_LOGS_REQUEST.message(logSource.jobName(), lokiPushUrl));
+
             HttpResponse httpResponse = httpClient.execute(httpPost);
             StatusLine statusLine = httpResponse.getStatusLine();
             int statusCode = statusLine.getStatusCode();
 
+            log.fine(LogMessage.EXECUTED_PUSH_LOGS_REQUEST.message(logSource.jobName(), lokiPushUrl, statusCode));
+
             int expectedSuccessStatusCode = EnvVar.EXPECTED_LOKI_RESPONSE_STATUS_CODE.intValue();
             if (statusCode != expectedSuccessStatusCode) {
-                String message = statusLine.getReasonPhrase();
+                String responseBody = readBody(httpEntity);
+                log.severe(LogMessage.FAILED_LOGS_PUSH.message(logSource.jobName(), lokiPushUrl, responseBody));
                 throw new RuntimeException(
-                        LogMessage.UNEXPECTED_RESPONSE_FROM_LOKI.message(statusCode, message)
+                        LogMessage.UNEXPECTED_RESPONSE_FROM_LOKI.message(statusCode, responseBody)
                 );
             }
             log.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logSource.jobName(), lokiPushUrl));
         } catch (HttpHostConnectException e) {
-            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), EnvVar.LOKI_PUSH_URL.value()));
+            log.severe(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), EnvVar.LOKI_PUSH_URL.value()));
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public LogsResponseDto fetchLogs(LogSource logSource) {
+        log.fine(LogMessage.STARTING_TO_FETCH_LOGS.message(logSource.jobName(), logSource.logsUrl()));
+
         try (var httpClient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(logSource.logsUrl());
             HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
@@ -67,6 +85,8 @@ public class HttpService {
             httpPost.setHeader(EnvVar.SECRET_KEY_HEADER.value(), EnvVar.SECRET_KEY.value());
             httpPost.setHeader(HttpHeaders.AUTHORIZATION, EnvVar.AUTH_TOKEN.value());
             httpPost.setEntity(fetchLogsRequestEntity);
+
+            log.finer(LogMessage.SUCCESSFULLY_PREPARED_FETCH_LOGS_REQUEST.message(logSource.jobName(), logSource.logsUrl()));
 
             HttpResponse httpResponse = httpClient.execute(httpPost);
 
@@ -77,13 +97,17 @@ public class HttpService {
 
             int statusCode = statusLine.getStatusCode();
 
+            log.fine(LogMessage.EXECUTED_FETCH_LOGS_REQUEST.message(logSource.jobName(), logSource.logsUrl(), statusCode));
+
             if (statusCode != HttpStatus.SC_OK) {
-                log.warning(LogMessage.FAILED_LOGS_FETCH.message(logSource.jobName(), logSource.logsUrl(), responseBody));
-                return LogsResponseDto.unfetched();
+                log.severe(LogMessage.FAILED_LOGS_FETCH.message(logSource.jobName(), logSource.logsUrl(), responseBody));
+                throw new RuntimeException(LogMessage.UNEXPECTED_RESPONSE_FOR_LOGS_REQUEST.message(logSource.jobName(), statusCode, logSource.logsUrl()));
             }
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
             JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD.value());
+
+            log.fine(LogMessage.AMOUNT_OF_LOG_LINES.message(logSource.jobName(), jsonArray.size(), logSource.logsUrl()));
 
             List<String> logLines = new ArrayList<>(jsonArray.asList().stream()
                     .map(JsonElement::getAsString)
@@ -92,12 +116,11 @@ public class HttpService {
             log.info(LogMessage.SUCCESSFUL_LOGS_FETCH.message(logSource.jobName(), logSource.logsUrl()));
 
             return new LogsResponseDto(
-                    logLines,
-                    true
+                    logLines
             );
         } catch (HttpHostConnectException e) {
-            log.warning(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), logSource.logsUrl()));
-            return LogsResponseDto.unfetched();
+            log.severe(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), logSource.logsUrl()));
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -124,5 +147,13 @@ public class HttpService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void initLogger() {
+        Handler handlerObj = new ConsoleHandler();
+        handlerObj.setLevel(Level.parse(EnvVar.LOGGING_LEVEL.value()));
+        log.addHandler(handlerObj);
+        log.setLevel(Level.ALL);
+        log.setUseParentHandlers(false);
     }
 }

@@ -3,6 +3,7 @@ package org.greencity.constant;
 public enum EnvVar {
 
     SERVER_TIME_ZONE(System.getenv("SERVER_TIME_ZONE")),
+    LOGGING_LEVEL(System.getenv("LOGGING_LEVEL")),
 
     FETCH_LOGS_FROM(System.getenv("FETCH_LOGS_FROM")),
     SECRET_KEY_HEADER(System.getenv("SECRET_KEY_HEADER")),
