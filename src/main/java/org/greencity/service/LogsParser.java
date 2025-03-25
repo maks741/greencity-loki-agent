@@ -26,7 +26,7 @@ public class LogsParser {
     private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
 
     public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
-        String logRegex = EnvVar.LOG_REGEX.value();
+        String logRegex = EnvVar.LOG_REGEX();
         Pattern logPattern = Pattern.compile(logRegex);
 
         StringBuilder exceptionStackTraceBuilder = new StringBuilder();
@@ -141,14 +141,14 @@ public class LogsParser {
     }
 
     private String parseToUnixTime(String timestamp) {
-        String logTimestampPattern = EnvVar.LOG_TIMESTAMP_PATTERN.value();
+        String logTimestampPattern = EnvVar.LOG_TIMESTAMP_PATTERN();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(logTimestampPattern);
 
         log.finest(LogMessage.PARSING_TIMESTAMP.message(timestamp, logTimestampPattern));
 
         LocalDateTime localDateTime = LocalDateTime.parse(timestamp, dateTimeFormatter);
 
-        ZoneId localZone = ZoneId.of(EnvVar.SERVER_TIME_ZONE.value());
+        ZoneId localZone = ZoneId.of(EnvVar.SERVER_TIME_ZONE());
 
         ZonedDateTime localZonedDateTime = localDateTime.atZone(localZone);
         ZonedDateTime utcZonedDateTime = localZonedDateTime.withZoneSameInstant(ZoneOffset.UTC);

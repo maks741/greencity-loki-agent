@@ -34,7 +34,7 @@ public class HttpService {
     private static final Logger log = LokiAgentLogger.getLogger(HttpService.class);
 
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
-        String lokiPushUrl = EnvVar.LOKI_PUSH_URL.value();
+        String lokiPushUrl = EnvVar.LOKI_PUSH_URL();
 
         log.fine(LogMessage.STARTING_TO_PUSH_LOGS.message(logSource.jobName(), lokiPushUrl));
 
@@ -52,7 +52,7 @@ public class HttpService {
 
             log.fine(LogMessage.EXECUTED_PUSH_LOGS_REQUEST.message(logSource.jobName(), lokiPushUrl, statusCode));
 
-            int expectedSuccessStatusCode = EnvVar.EXPECTED_LOKI_RESPONSE_STATUS_CODE.intValue();
+            int expectedSuccessStatusCode = EnvVar.EXPECTED_LOKI_RESPONSE_STATUS_CODE();
             if (statusCode != expectedSuccessStatusCode) {
                 String responseBody = readBody(httpEntity);
                 log.severe(LogMessage.FAILED_LOGS_PUSH.message(logSource.jobName(), lokiPushUrl, responseBody));
@@ -62,7 +62,7 @@ public class HttpService {
             }
             log.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logSource.jobName(), lokiPushUrl));
         } catch (HttpHostConnectException e) {
-            log.severe(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), EnvVar.LOKI_PUSH_URL.value()));
+            log.severe(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), EnvVar.LOKI_PUSH_URL()));
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -76,8 +76,8 @@ public class HttpService {
             HttpPost httpPost = new HttpPost(logSource.logsUrl());
             HttpEntity fetchLogsRequestEntity = buildFetchLogsRequestEntity();
 
-            httpPost.setHeader(EnvVar.SECRET_KEY_HEADER.value(), EnvVar.SECRET_KEY.value());
-            httpPost.setHeader(HttpHeaders.AUTHORIZATION, EnvVar.AUTH_TOKEN.value());
+            httpPost.setHeader(EnvVar.SECRET_KEY_HEADER(), EnvVar.SECRET_KEY());
+            httpPost.setHeader(HttpHeaders.AUTHORIZATION, EnvVar.AUTH_TOKEN());
             httpPost.setEntity(fetchLogsRequestEntity);
 
             log.finer(LogMessage.SUCCESSFULLY_PREPARED_FETCH_LOGS_REQUEST.message(logSource.jobName(), logSource.logsUrl()));
@@ -99,7 +99,7 @@ public class HttpService {
             }
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
-            JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD.value());
+            JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD());
 
             log.fine(LogMessage.AMOUNT_OF_LOG_LINES.message(logSource.jobName(), jsonArray.size(), logSource.logsUrl()));
 
@@ -128,7 +128,7 @@ public class HttpService {
 
     private HttpEntity buildFetchLogsRequestEntity() {
         Gson gson = new Gson();
-        Integer logsDaysOffset = EnvVar.LOGS_DAYS_OFFSET.intValue();
+        int logsDaysOffset = EnvVar.LOGS_DAYS_OFFSET();
         LogsRequestDto logsRequestDto = new LogsRequestDto(logsDaysOffset);
 
         String logLinesRequestJson = gson.toJson(logsRequestDto);

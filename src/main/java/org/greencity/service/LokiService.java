@@ -33,7 +33,7 @@ public class LokiService {
     }
 
     private List<LogSource> determineLogsSources() {
-        return Arrays.stream(EnvVar.FETCH_LOGS_FROM.value()
+        return Arrays.stream(EnvVar.FETCH_LOGS_FROM()
                 .split(","))
                 .map(LogSource::valueOf)
                 .toList();
