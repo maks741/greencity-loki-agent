@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 public class HttpService {
 
     private static final Logger log = LokiAgentLogger.getLogger(HttpService.class);
+    private static int lastReceivedLineNumber = 0;
 
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
         String lokiPushUrl = EnvVar.LOKI_PUSH_URL();
@@ -101,7 +102,9 @@ public class HttpService {
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
             JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD());
 
-            log.fine(LogMessage.AMOUNT_OF_LOG_LINES.message(logSource.jobName(), jsonArray.size(), logSource.logsUrl()));
+            int amountOfLogLines = jsonArray.size();
+            lastReceivedLineNumber += amountOfLogLines;
+            log.fine(LogMessage.AMOUNT_OF_LOG_LINES.message(logSource.jobName(), amountOfLogLines, logSource.logsUrl()));
 
             List<String> logLines = new ArrayList<>(jsonArray.asList().stream()
                     .map(JsonElement::getAsString)
@@ -129,7 +132,10 @@ public class HttpService {
     private HttpEntity buildFetchLogsRequestEntity() {
         Gson gson = new Gson();
         int logsDaysOffset = EnvVar.LOGS_DAYS_OFFSET();
-        LogsRequestDto logsRequestDto = new LogsRequestDto(logsDaysOffset);
+        LogsRequestDto logsRequestDto = new LogsRequestDto(
+                logsDaysOffset,
+                lastReceivedLineNumber
+        );
 
         String logLinesRequestJson = gson.toJson(logsRequestDto);
         return new StringEntity(logLinesRequestJson, ContentType.APPLICATION_JSON);
