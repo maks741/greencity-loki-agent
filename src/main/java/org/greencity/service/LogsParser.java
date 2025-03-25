@@ -1,6 +1,7 @@
 package org.greencity.service;
 
 import org.greencity.constant.EnvVar;
+import org.greencity.constant.LogMessage;
 import org.greencity.constant.LogSource;
 import org.greencity.entity.LokiPayload;
 import org.greencity.entity.LokiStream;
@@ -141,16 +142,22 @@ public class LogsParser {
         String logTimestampPattern = EnvVar.LOG_TIMESTAMP_PATTERN.value();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(logTimestampPattern);
 
+        log.finest(LogMessage.PARSING_TIMESTAMP.message(timestamp, logTimestampPattern));
+
         LocalDateTime localDateTime = LocalDateTime.parse(timestamp, dateTimeFormatter);
 
         ZoneId localZone = ZoneId.of(EnvVar.SERVER_TIME_ZONE.value());
 
         ZonedDateTime localZonedDateTime = localDateTime.atZone(localZone);
-
         ZonedDateTime utcZonedDateTime = localZonedDateTime.withZoneSameInstant(ZoneOffset.UTC);
 
-        Date date = Date.from(utcZonedDateTime.toInstant());
+        log.finest(LogMessage.PARSED_TIMESTAMP_OFFSET.message(localZonedDateTime, utcZonedDateTime));
 
-        return String.valueOf(date.getTime() * 1_000_000);
+        Date date = Date.from(utcZonedDateTime.toInstant());
+        String unixTimeNanos = String.valueOf(date.getTime() * 1_000_000);
+
+        log.finest(LogMessage.PARSED_UNIX_TIMESTAMP.message(utcZonedDateTime, unixTimeNanos));
+
+        return unixTimeNanos;
     }
 }

@@ -18,7 +18,11 @@ public enum LogMessage {
     EXECUTED_FETCH_LOGS_REQUEST("Job %s executed request to fetch logs from %s and received %s status code"),
     EXECUTED_PUSH_LOGS_REQUEST("Job %s executed request to push logs to %s and received %s status code"),
     UNEXPECTED_RESPONSE_FOR_LOGS_REQUEST("Job %s received unexpected response status code [%s] when fetching logs from %s"),
-    AMOUNT_OF_LOG_LINES("Job %s received %s log lines as a response from %s");
+    AMOUNT_OF_LOG_LINES("Job %s received %s log lines as a response from %s"),
+
+    PARSING_TIMESTAMP("Starting to parse log timestamp %s of %s pattern"),
+    PARSED_TIMESTAMP_OFFSET("Parsed log timestamp based of server time zone: %s; After offsetting to UTC: %s"),
+    PARSED_UNIX_TIMESTAMP("UTC time %s successfully parsed to %s Unix timestamp");
 
     private final String message;
 
