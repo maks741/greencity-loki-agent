@@ -138,7 +138,8 @@ public class LogsParser {
     }
 
     private String parseToUnixTime(String timestamp) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String logTimestampPattern = EnvVar.LOG_TIMESTAMP_PATTERN.value();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(logTimestampPattern);
 
         LocalDateTime localDateTime = LocalDateTime.parse(timestamp, dateTimeFormatter);
 
