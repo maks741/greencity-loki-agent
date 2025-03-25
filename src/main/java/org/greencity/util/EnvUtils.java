@@ -10,6 +10,7 @@ public class EnvUtils {
 
     public static void verifyEnvironmentVariables() {
         Method[] methods = EnvVar.class.getDeclaredMethods();
+
         for (Method method : methods) {
             try {
                 Object invocationResult = method.invoke(null);
