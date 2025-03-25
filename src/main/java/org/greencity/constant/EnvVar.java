@@ -61,14 +61,4 @@ public class EnvVar {
     public static String GREENCITY_USER_LOGS_URL() {
         return System.getenv("GREENCITY_USER_LOGS_URL");
     }
-
-    public static void verifyEnvironmentVariables() {
-        /*for (EnvVar envVar : values()) {
-            if (envVar.value() == null) {
-                throw new RuntimeException(
-                        LogMessage.ENV_VAR_NOT_FOUND.message(envVar.name())
-                );
-            }
-        }*/
-    }
 }
