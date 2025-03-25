@@ -22,22 +22,16 @@ import org.greencity.constant.LogSource;
 import org.greencity.dto.LogsRequestDto;
 import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
+import org.greencity.helper.LokiAgentLogger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HttpService {
 
-    private static final Logger log = Logger.getLogger(HttpService.class.getName());
-
-    static {
-        initLogger();
-    }
+    private static final Logger log = LokiAgentLogger.getLogger(HttpService.class);
 
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
         String lokiPushUrl = EnvVar.LOKI_PUSH_URL.value();
@@ -147,13 +141,5 @@ public class HttpService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static void initLogger() {
-        Handler handlerObj = new ConsoleHandler();
-        handlerObj.setLevel(Level.parse(EnvVar.LOGGING_LEVEL.value()));
-        log.addHandler(handlerObj);
-        log.setLevel(Level.ALL);
-        log.setUseParentHandlers(false);
     }
 }

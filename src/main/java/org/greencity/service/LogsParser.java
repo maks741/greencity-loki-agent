@@ -16,10 +16,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogsParser {
+
+    private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
 
     public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
         String logRegex = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
