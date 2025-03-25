@@ -26,7 +26,7 @@ public class LogsParser {
     private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
 
     public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
-        String logRegex = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
+        String logRegex = EnvVar.LOG_REGEX.value();
         Pattern logPattern = Pattern.compile(logRegex);
 
         StringBuilder exceptionStackTraceBuilder = new StringBuilder();
