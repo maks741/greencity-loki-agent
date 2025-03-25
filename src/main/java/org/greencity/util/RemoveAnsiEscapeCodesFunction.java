@@ -1,4 +1,4 @@
-package org.greencity.helper;
+package org.greencity.util;
 
 import java.util.function.Function;
 

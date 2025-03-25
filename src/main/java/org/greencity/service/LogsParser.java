@@ -5,8 +5,8 @@ import org.greencity.constant.LogMessage;
 import org.greencity.constant.LogSource;
 import org.greencity.entity.LokiPayload;
 import org.greencity.entity.LokiStream;
-import org.greencity.helper.LokiAgentLogger;
-import org.greencity.helper.RemoveAnsiEscapeCodesFunction;
+import org.greencity.util.LokiAgentLogger;
+import org.greencity.util.RemoveAnsiEscapeCodesFunction;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

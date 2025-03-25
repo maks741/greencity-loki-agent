@@ -22,7 +22,7 @@ import org.greencity.constant.LogSource;
 import org.greencity.dto.LogsRequestDto;
 import org.greencity.dto.LogsResponseDto;
 import org.greencity.entity.LokiChunk;
-import org.greencity.helper.LokiAgentLogger;
+import org.greencity.util.LokiAgentLogger;
 
 import java.io.IOException;
 import java.util.ArrayList;
