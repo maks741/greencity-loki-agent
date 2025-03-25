@@ -16,10 +16,12 @@ public class LokiAgentLogger {
     }
 
     private static void initLogger(Logger log) {
+        Level loggingLevel = Level.parse(EnvVar.LOGGING_LEVEL.value());
+
         Handler handlerObj = new ConsoleHandler();
-        handlerObj.setLevel(Level.parse(EnvVar.LOGGING_LEVEL.value()));
+        handlerObj.setLevel(loggingLevel);
         log.addHandler(handlerObj);
-        log.setLevel(Level.ALL);
+        log.setLevel(loggingLevel);
         log.setUseParentHandlers(false);
     }
 }
