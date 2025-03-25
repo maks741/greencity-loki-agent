@@ -12,6 +12,10 @@ public class EnvUtils {
         Method[] methods = EnvVar.class.getDeclaredMethods();
 
         for (Method method : methods) {
+            if (!method.canAccess(null)) {
+                return;
+            }
+
             try {
                 Object invocationResult = method.invoke(null);
 

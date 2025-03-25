@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,6 +51,8 @@ public class EnvUtilsTest {
             envVarMockedStatic.when(EnvVar::GREENCITY_USER_LOGS_URL).thenReturn(expectedGreencityUserLogsUrl);
 
             assertDoesNotThrow(EnvUtils::verifyEnvironmentVariables);
+            System.out.println("amount of inter: " + Mockito.mockingDetails(EnvVar.class).getInvocations().size());
+            System.out.println("amount of methods: " + Arrays.stream(EnvVar.class.getDeclaredMethods()).filter(method -> method.canAccess(null)).count());
 
             assertEquals(expectedServerTimeZone, EnvVar.SERVER_TIME_ZONE());
             assertEquals(expectedLoggingLevel, EnvVar.LOGGING_LEVEL());

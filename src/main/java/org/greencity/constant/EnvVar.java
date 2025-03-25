@@ -34,16 +34,16 @@ public class EnvVar {
         return System.getenv("RESPONSE_BODY_FIELD");
     }
 
-    public static int LOGS_DAYS_OFFSET() {
-        return Integer.parseInt(System.getenv("LOGS_DAYS_OFFSET"));
+    public static Integer LOGS_DAYS_OFFSET() {
+        return toInteger("LOGS_DAYS_OFFSET");
     }
 
     public static String AUTH_TOKEN() {
         return "Bearer " + System.getenv("AUTH_TOKEN");
     }
 
-    public static int EXPECTED_LOKI_RESPONSE_STATUS_CODE() {
-        return Integer.parseInt(System.getenv("EXPECTED_LOKI_RESPONSE_STATUS_CODE"));
+    public static Integer EXPECTED_LOKI_RESPONSE_STATUS_CODE() {
+        return toInteger("EXPECTED_LOKI_RESPONSE_STATUS_CODE");
     }
 
     public static String LOKI_PUSH_URL() {
@@ -60,5 +60,19 @@ public class EnvVar {
 
     public static String GREENCITY_USER_LOGS_URL() {
         return System.getenv("GREENCITY_USER_LOGS_URL");
+    }
+
+    public static Integer REFRESH_TIMOUT_SECONDS() {
+        return toInteger("REFRESH_TIMOUT_SECONDS");
+    }
+
+    private static Integer toInteger(String envVarName) {
+        String envVarValueStr = System.getenv(envVarName);
+
+        if (envVarValueStr == null) {
+            return null;
+        }
+
+        return Integer.parseInt(envVarValueStr);
     }
 }

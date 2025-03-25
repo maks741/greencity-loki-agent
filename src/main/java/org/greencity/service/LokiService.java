@@ -17,13 +17,15 @@ public class LokiService {
     private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
 
     public void fetchLogsAndPushToLoki() {
+        int refreshTimeoutSeconds = EnvVar.REFRESH_TIMOUT_SECONDS();
+
         EXECUTOR_SERVICE.scheduleWithFixedDelay(() -> {
             List<LogSource> logSources = determineLogsSources();
 
             for (LogSource logSource : logSources) {
                 fetchLogsAndPushToLoki(logSource);
             }
-        }, 0, 10, TimeUnit.MINUTES);
+        }, 0, refreshTimeoutSeconds, TimeUnit.SECONDS);
     }
 
     private void fetchLogsAndPushToLoki(LogSource logSource) {
