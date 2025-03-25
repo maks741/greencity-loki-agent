@@ -4,6 +4,7 @@ import org.greencity.constant.EnvVar;
 import org.greencity.constant.LogSource;
 import org.greencity.entity.LokiPayload;
 import org.greencity.entity.LokiStream;
+import org.greencity.helper.LokiAgentLogger;
 import org.greencity.helper.RemoveAnsiEscapeCodesFunction;
 
 import java.time.LocalDateTime;
@@ -36,14 +37,7 @@ public class LogsParser {
                     boolean log = logMatcher.find();
 
                     if (log) {
-                        if (!exceptionStackTraceBuilder.isEmpty()) {
-                            lokiPayloads.add(buildExceptionLokiPayload(
-                                    logSource,
-                                    lokiPayloads,
-                                    exceptionStackTraceBuilder
-                            ));
-                            exceptionStackTraceBuilder.setLength(0);
-                        }
+                        flushExceptionStackTraceBuilder(exceptionStackTraceBuilder, logSource, lokiPayloads);
 
                         String timestamp = parseToUnixTime(logMatcher.group(1));
                         String level = logMatcher.group(2);
@@ -60,7 +54,20 @@ public class LogsParser {
                     }
                 });
 
+        flushExceptionStackTraceBuilder(exceptionStackTraceBuilder, logSource, lokiPayloads);
+
         return lokiPayloads;
+    }
+
+    private void flushExceptionStackTraceBuilder(StringBuilder exceptionStackTraceBuilder, LogSource logSource, List<LokiPayload> lokiPayloads) {
+        if (!exceptionStackTraceBuilder.isEmpty()) {
+            lokiPayloads.add(buildExceptionLokiPayload(
+                    logSource,
+                    lokiPayloads,
+                    exceptionStackTraceBuilder
+            ));
+            exceptionStackTraceBuilder.setLength(0);
+        }
     }
 
     private LokiPayload buildExceptionLokiPayload(
