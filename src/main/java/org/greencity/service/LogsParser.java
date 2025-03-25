@@ -64,14 +64,16 @@ public class LogsParser {
     }
 
     private void flushExceptionStackTraceBuilder(StringBuilder exceptionStackTraceBuilder, LogSource logSource, List<LokiPayload> lokiPayloads) {
-        if (!exceptionStackTraceBuilder.isEmpty()) {
-            lokiPayloads.add(buildExceptionLokiPayload(
-                    logSource,
-                    lokiPayloads,
-                    exceptionStackTraceBuilder
-            ));
-            exceptionStackTraceBuilder.setLength(0);
+        if (exceptionStackTraceBuilder.isEmpty()) {
+            return;
         }
+
+        lokiPayloads.add(buildExceptionLokiPayload(
+                logSource,
+                lokiPayloads,
+                exceptionStackTraceBuilder
+        ));
+        exceptionStackTraceBuilder.setLength(0);
     }
 
     private LokiPayload buildExceptionLokiPayload(
