@@ -16,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +23,7 @@ import java.util.regex.Pattern;
 public class LogsParser {
 
     private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
+    private static String lastLogUnixTimestamp = "";
 
     public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
         String logRegex = EnvVar.LOG_REGEX();
@@ -70,7 +70,6 @@ public class LogsParser {
 
         lokiPayloads.add(buildExceptionLokiPayload(
                 logSource,
-                lokiPayloads,
                 exceptionStackTraceBuilder
         ));
         exceptionStackTraceBuilder.setLength(0);
@@ -78,16 +77,14 @@ public class LogsParser {
 
     private LokiPayload buildExceptionLokiPayload(
             LogSource logSource,
-            List<LokiPayload> lokiPayloads,
             StringBuilder exceptionStackTraceBuilder
     ) {
-        String timestamp = timestampOfLastPayload(lokiPayloads);
         String exceptionLoggingLevel = "ERROR";
         String exceptionStackTrace = exceptionStackTraceBuilder.toString();
 
         return buildLokiPayload(
                 logSource,
-                timestamp,
+                lastLogUnixTimestamp,
                 exceptionLoggingLevel,
                 exceptionStackTrace
         );
@@ -99,6 +96,8 @@ public class LogsParser {
             String level,
             String message
     ) {
+        lastLogUnixTimestamp = timestamp;
+
         List<List<String>> values = valuesForLokiPayload(
                 timestamp,
                 message
@@ -131,13 +130,6 @@ public class LogsParser {
                         message
                 )
         );
-    }
-
-    private String timestampOfLastPayload(List<LokiPayload> lokiPayloads) {
-        Optional<LokiPayload> last = Optional.of(lokiPayloads.getLast());
-
-        return last.map(LokiPayload::timestamp)
-                .orElseThrow(() -> new RuntimeException("Exception is the first log in the app and it's timestamp can not be determined"));
     }
 
     private String parseToUnixTime(String timestamp) {
