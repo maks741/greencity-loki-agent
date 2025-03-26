@@ -45,7 +45,7 @@ public class HttpService {
 
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
         if (lokiChunk.streams().isEmpty()) {
-            log.fine(LogMessage.LOKI_CHUNK_IS_EMPTY.message(logSource.jobName()));
+            LOGGER.fine(LogMessage.LOKI_CHUNK_IS_EMPTY.message(logSource.jobName()));
             return;
         }
 
