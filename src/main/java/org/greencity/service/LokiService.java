@@ -9,15 +9,24 @@ import org.greencity.entity.LokiPayload;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class LokiService {
 
-    public void fetchLogsAndPushToLoki() {
-        List<LogSource> logSources = determineLogsSources();
+    private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
 
-        for (LogSource logSource : logSources) {
-            fetchLogsAndPushToLoki(logSource);
-        }
+    public void fetchLogsAndPushToLoki() {
+        int refreshTimeoutSeconds = EnvVar.REFRESH_TIMOUT_SECONDS();
+
+        EXECUTOR_SERVICE.scheduleWithFixedDelay(() -> {
+            List<LogSource> logSources = determineLogsSources();
+
+            for (LogSource logSource : logSources) {
+                fetchLogsAndPushToLoki(logSource);
+            }
+        }, 0, refreshTimeoutSeconds, TimeUnit.SECONDS);
     }
 
     private void fetchLogsAndPushToLoki(LogSource logSource) {

@@ -13,6 +13,7 @@ public enum LogMessage {
     INVALID_CLIENT_PROTOCOL("Job %s unable to connect due to invalid protocol"),
     UNABLE_TO_EXECUTE_HTTP_REQUEST("Job %s unable to execute HTTP request. Error: %s"),
 
+    LOKI_CHUNK_IS_EMPTY("Job %s will not push logs to Loki because there is no new logs"),
     STARTING_TO_FETCH_LOGS("Job %s is starting to fetch logs from %s"),
     STARTING_TO_PUSH_LOGS("Job %s is starting to push logs to %s"),
     SUCCESSFULLY_PREPARED_FETCH_LOGS_REQUEST("Job %s successfully prepared request to fetch logs from %s"),

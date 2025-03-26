@@ -37,12 +37,18 @@ public class HttpService {
 
     private static final Logger LOGGER = LokiAgentLogger.getLogger(HttpService.class);
     private final CloseableHttpClient HTTP_CLIENT;
+    private static int lastReceivedLineNumber = 0;
 
     public HttpService(CloseableHttpClient httpClient) {
         this.HTTP_CLIENT = httpClient;
     }
 
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
+        if (lokiChunk.streams().isEmpty()) {
+            log.fine(LogMessage.LOKI_CHUNK_IS_EMPTY.message(logSource.jobName()));
+            return;
+        }
+
         String lokiPushUrl = EnvVar.LOKI_PUSH_URL();
         LOGGER.fine(LogMessage.STARTING_TO_PUSH_LOGS.message(logSource.jobName(), lokiPushUrl));
         try {
@@ -110,7 +116,9 @@ public class HttpService {
 
             JsonObject response = JsonParser.parseString(responseBody).getAsJsonObject();
             JsonArray jsonArray = response.getAsJsonArray(EnvVar.RESPONSE_BODY_FIELD());
-
+          
+            int amountOfLogLines = jsonArray.size();
+            lastReceivedLineNumber += amountOfLogLines;
             LOGGER.fine(LogMessage.AMOUNT_OF_LOG_LINES.message(logSource.jobName(), jsonArray.size(), logSource.logsUrl()));
 
             List<String> logLines = new ArrayList<>(jsonArray.asList().stream()
@@ -139,7 +147,10 @@ public class HttpService {
     private HttpEntity buildFetchLogsRequestEntity() {
         Gson gson = new Gson();
         int logsDaysOffset = EnvVar.LOGS_DAYS_OFFSET();
-        LogsRequestDto logsRequestDto = new LogsRequestDto(logsDaysOffset);
+        LogsRequestDto logsRequestDto = new LogsRequestDto(
+                logsDaysOffset,
+                lastReceivedLineNumber
+        );
 
         String logLinesRequestJson = gson.toJson(logsRequestDto);
         return new StringEntity(logLinesRequestJson, ContentType.APPLICATION_JSON);
