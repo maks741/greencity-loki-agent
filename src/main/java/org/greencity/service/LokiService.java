@@ -1,5 +1,6 @@
 package org.greencity.service;
 
+import org.apache.http.impl.client.HttpClients;
 import org.greencity.constant.EnvVar;
 import org.greencity.constant.LogSource;
 import org.greencity.dto.LogsResponseDto;
@@ -29,7 +30,7 @@ public class LokiService {
     }
 
     private void fetchLogsAndPushToLoki(LogSource logSource) {
-        HttpService httpService = new HttpService();
+        HttpService httpService = new HttpService(HttpClients.createDefault());
         LogsParser logsParser = new LogsParser();
 
         LogsResponseDto logsResponseDto = httpService.fetchLogs(logSource);

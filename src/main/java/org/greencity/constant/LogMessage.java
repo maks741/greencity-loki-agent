@@ -10,6 +10,8 @@ public enum LogMessage {
     FAILED_LOGS_FETCH("Job %s can not fetch logs from %s; Response: %s"),
     FAILED_LOGS_PUSH("Job %s can not push logs to %s; Response: %s"),
     UNABLE_TO_CONNECT("Job %s can not connect to %s"),
+    INVALID_CLIENT_PROTOCOL("Job %s unable to connect due to invalid protocol"),
+    UNABLE_TO_EXECUTE_HTTP_REQUEST("Job %s unable to execute HTTP request. Error: %s"),
 
     LOKI_CHUNK_IS_EMPTY("Job %s will not push logs to Loki because there is no new logs"),
     STARTING_TO_FETCH_LOGS("Job %s is starting to fetch logs from %s"),
