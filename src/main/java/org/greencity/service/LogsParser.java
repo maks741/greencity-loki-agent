@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 public class LogsParser {
     private static final String LOG_REGEX = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
-    private static final Pattern logPattern = Pattern.compile(LOG_REGEX);
+    private static final Pattern LOG_PATTERN = Pattern.compile(LOG_REGEX);
     private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
     private static String lastLogUnixTimestamp = "";
 
@@ -33,7 +33,7 @@ public class LogsParser {
         logLines.stream()
                 .map(new RemoveAnsiEscapeCodesFunction())
                 .forEach(s -> {
-                    Matcher logMatcher = logPattern.matcher(s);
+                    Matcher logMatcher = LOG_PATTERN.matcher(s);
 
                     // line is either a log or a line from an exception stack trace
                     boolean log = logMatcher.find();
