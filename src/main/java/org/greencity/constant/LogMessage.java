@@ -10,8 +10,8 @@ public enum LogMessage {
     FAILED_LOGS_FETCH("Job %s can not fetch logs from %s; Response: %s"),
     FAILED_LOGS_PUSH("Job %s can not push logs to %s; Response: %s"),
     UNABLE_TO_CONNECT("Job %s can not connect to %s"),
-    INVALID_CLIENT_PROTOCOL("Unable to connect due to invalid protocol"),
-    UNABLE_TO_EXECUTE_HTTP_REQUEST("Unable to execute HTTP request. Error: %s"),
+    INVALID_CLIENT_PROTOCOL("Job %s unable to connect due to invalid protocol"),
+    UNABLE_TO_EXECUTE_HTTP_REQUEST("Job %s unable to execute HTTP request. Error: %s"),
 
     STARTING_TO_FETCH_LOGS("Job %s is starting to fetch logs from %s"),
     STARTING_TO_PUSH_LOGS("Job %s is starting to push logs to %s"),

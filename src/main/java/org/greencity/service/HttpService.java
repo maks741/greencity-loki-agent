@@ -33,15 +33,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.greencity.constant.LogMessage.UNABLE_TO_EXECUTE_HTTP_REQUEST;
-
 public class HttpService {
+
     private static final Logger LOGGER = LokiAgentLogger.getLogger(HttpService.class);
     private final CloseableHttpClient HTTP_CLIENT;
 
     public HttpService(CloseableHttpClient httpClient) {
         this.HTTP_CLIENT = httpClient;
     }
+
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
         String lokiPushUrl = EnvVar.LOKI_PUSH_URL();
         LOGGER.fine(LogMessage.STARTING_TO_PUSH_LOGS.message(logSource.jobName(), lokiPushUrl));
@@ -67,14 +67,15 @@ public class HttpService {
                 );
             }
             LOGGER.info(LogMessage.SUCCESSFUL_PUSH_TO_LOKI.message(logSource.jobName(), lokiPushUrl));
+            HTTP_CLIENT.close();
         } catch (HttpHostConnectException e) {
             LOGGER.severe(LogMessage.UNABLE_TO_CONNECT.message(logSource.jobName(), EnvVar.LOKI_PUSH_URL()));
             throw new UnableToConnectException(e);
         } catch (ClientProtocolException e) {
-            LOGGER.severe(LogMessage.INVALID_CLIENT_PROTOCOL.message(EnvVar.LOKI_PUSH_URL()));
+            LOGGER.severe(LogMessage.INVALID_CLIENT_PROTOCOL.message(logSource.jobName()));
             throw new InvalidProtocolException(e);
         } catch (IOException e) {
-            LOGGER.severe(UNABLE_TO_EXECUTE_HTTP_REQUEST.message(e.getMessage()));
+            LOGGER.severe(LogMessage.UNABLE_TO_EXECUTE_HTTP_REQUEST.message(logSource.jobName(), e.getMessage()));
             throw new HttpRequestExecutionException(e);
         }
     }
