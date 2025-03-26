@@ -21,14 +21,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogsParser {
-
+    private static final String LOG_REGEX = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
+    private static final Pattern logPattern = Pattern.compile(LOG_REGEX);
     private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
     private static String lastLogUnixTimestamp = "";
 
     public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
-        String logRegex = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
-        Pattern logPattern = Pattern.compile(logRegex);
-
         StringBuilder exceptionStackTraceBuilder = new StringBuilder();
         List<LokiPayload> lokiPayloads = new ArrayList<>();
 
