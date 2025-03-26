@@ -35,6 +35,11 @@ public class HttpService {
     private static int lastReceivedLineNumber = 0;
 
     public void pushToLoki(LokiChunk lokiChunk, LogSource logSource) {
+        if (lokiChunk.streams().isEmpty()) {
+            log.fine(LogMessage.LOKI_CHUNK_IS_EMPTY.message(logSource.jobName()));
+            return;
+        }
+
         String lokiPushUrl = EnvVar.LOKI_PUSH_URL();
 
         log.fine(LogMessage.STARTING_TO_PUSH_LOGS.message(logSource.jobName(), lokiPushUrl));

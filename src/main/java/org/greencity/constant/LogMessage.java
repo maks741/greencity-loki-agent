@@ -11,6 +11,7 @@ public enum LogMessage {
     FAILED_LOGS_PUSH("Job %s can not push logs to %s; Response: %s"),
     UNABLE_TO_CONNECT("Job %s can not connect to %s"),
 
+    LOKI_CHUNK_IS_EMPTY("Job %s will not push logs to Loki because there is no new logs"),
     STARTING_TO_FETCH_LOGS("Job %s is starting to fetch logs from %s"),
     STARTING_TO_PUSH_LOGS("Job %s is starting to push logs to %s"),
     SUCCESSFULLY_PREPARED_FETCH_LOGS_REQUEST("Job %s successfully prepared request to fetch logs from %s"),
