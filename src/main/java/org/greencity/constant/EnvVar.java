@@ -14,10 +14,6 @@ public class EnvVar {
         return System.getenv("LOG_TIMESTAMP_PATTERN");
     }
 
-    public static String LOG_REGEX() {
-        return System.getenv("LOG_REGEX");
-    }
-
     public static String FETCH_LOGS_FROM() {
         return System.getenv("FETCH_LOGS_FROM");
     }

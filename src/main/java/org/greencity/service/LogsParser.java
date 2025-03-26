@@ -26,7 +26,7 @@ public class LogsParser {
     private static String lastLogUnixTimestamp = "";
 
     public List<LokiPayload> parseToLokiPayloads(LogSource logSource, List<String> logLines) {
-        String logRegex = EnvVar.LOG_REGEX();
+        String logRegex = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
         Pattern logPattern = Pattern.compile(logRegex);
 
         StringBuilder exceptionStackTraceBuilder = new StringBuilder();
