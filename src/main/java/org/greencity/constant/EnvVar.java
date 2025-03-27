@@ -10,10 +10,6 @@ public class EnvVar {
         return System.getenv("LOGGING_LEVEL");
     }
 
-    public static String LOG_TIMESTAMP_PATTERN() {
-        return System.getenv("LOG_TIMESTAMP_PATTERN");
-    }
-
     public static String FETCH_LOGS_FROM() {
         return System.getenv("FETCH_LOGS_FROM");
     }
