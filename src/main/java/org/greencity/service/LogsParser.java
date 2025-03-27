@@ -8,19 +8,20 @@ import org.greencity.entity.LokiStream;
 import org.greencity.util.LokiAgentLogger;
 import org.greencity.util.RemoveAnsiEscapeCodesFunction;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogsParser {
+
     private static final String LOG_REGEX = "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})]\\s(\\w+)\\s(.*)";
     private static final Pattern LOG_PATTERN = Pattern.compile(LOG_REGEX);
     private static final Logger log = LokiAgentLogger.getLogger(LogsParser.class);
@@ -145,11 +146,15 @@ public class LogsParser {
 
         log.finest(LogMessage.PARSED_TIMESTAMP_OFFSET.message(localZonedDateTime, utcZonedDateTime));
 
-        Date date = Date.from(utcZonedDateTime.toInstant());
-        String unixTimeNanos = String.valueOf(date.getTime() * 1_000_000);
+        Instant instant = utcZonedDateTime.toInstant();
+        String unixTimeNanos = instantToNanosString(instant);
 
         log.finest(LogMessage.PARSED_UNIX_TIMESTAMP.message(utcZonedDateTime, unixTimeNanos));
 
         return unixTimeNanos;
+    }
+
+    private String instantToNanosString(Instant instant) {
+        return String.valueOf(instant.toEpochMilli() * 1_000_000);
     }
 }
